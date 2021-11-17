@@ -92,26 +92,21 @@ class LoginControl extends React.Component {
   //Un Composant dans une classe renvoir TOUJOURS un rendu. Comme une fonction qui va déclencher le return a afficher dans le DOM
   render() {
     const isLoggedIn = this.state.isLoggedIn;
-    let button;
-    if (isLoggedIn) {
-      button = <LogoutButton onClick={this.handleLogoutClick} />; //handleClick est une méthode de classe donc je dois passer par l'opérateur this
-    } else {
-      button = <LoginButton onClick={this.handleLoginClick} />;
-    }
-
-    //la fonction return est affiché a chaque fois que lon met à jour le DOM
     return (
       <div>
-        <Greeting isLoggedIn={isLoggedIn} />
-        {button}
+        {isLoggedIn
+          ? <LogoutButton onClick={this.handleLogoutClick} />
+          : <LoginButton onClick={this.handleLoginClick} />
+        }
       </div>
     );
   }
 }
 
 ReactDOM.render(
-  <LoginControl />,
+  <React.StrictMode>
+   <LoginControl />
+  </React.StrictMode>,
   document.getElementById('root')
 );
-
 
