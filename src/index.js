@@ -1,117 +1,110 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 
-// Creer les composants suivants : 
-// Welcome
-// Connexion
-// Greeting (qui affiche connecte toi ou bienvenu)
-// LoginButton
-// LogoutButton
-// LoginPage
+// Créer un composant AddForm
+// 	handleSubmit() -> appeler une props de App (comme ça c'est App qui va gérer l'action du submit) (annuler le comportement par défaut du formulaire (rechargement de page))
+//     Mettre en place un formulaire avec un input type text et submit et capter l'évenement submit et appeler handleSubmit()
 
-// De base quand le composant est chargé
-// j'affiche le msg Veuillez vous connecter.
-// et le boutton connexion
+function AddForm(props) {
 
-// Si je clique sur le boutton de connexion
-// j'affiche le msg Welcome.
-// et le boutton deconnexion
+  function handleSubmit(e) { //
+    e.preventDefault();// evite le rechargement de la page
+    console.log('submit');
+    const input = document.getElementById('input'); //ici on a mit l'input dans une variable pour la réutiliser
+    props.onSubmit(input.value);//récupere la valeur de la const input et l'envoi a la propriété onSubmit
 
-// Si je clique sur le boutton de deconnexion
-// j'affiche le msg Veuillez vous connecter.
-// et le boutton connexion
-
-// 01 - Afficher des composants sous conditions
-
-function UserGreeting(props) {
-  return <h1>Welcome !</h1>;
-}
-
-function GuestGreeting(props) {
-  return <h1>Veuillez vous connecter.</h1>;
-}
-function Greeting(props) {
-  const isLoggedIn = props.isLoggedIn;
-  if (isLoggedIn) {
-    return <UserGreeting />;
+    // je réinitialise l'input à du vide (reset)
+    input.value = "";
   }
-  return <GuestGreeting />;
-}
 
-ReactDOM.render(
-  // Essayez de changer ça vers isLoggedIn={true} :
-  <Greeting isLoggedIn={false} />,
-  document.getElementById('root')
-);
-
-
-// 2EME ETAPE (creation du bouton(connexion) via  1 Composant)
-function LoginButton(props) {
   return (
-    <button onClick={props.onClick}>
-      Connexion
-    </button>
+    // des que le formulaire est soumit il va lancer la fonction handleSubmit
+    <form onSubmit={handleSubmit}>
+      {/* l'input a été placé dans une constante au dessus */}
+      <input type="text" id="input" placeholder="Entrez une course" />
+      <input type="submit" value="Ajouter" />
+    </form>
   );
+
 }
 
-// (creation du bouton(déconnexion) via 1 Composant)
-function LogoutButton(props) {
+// Créer un composant Item
+// 	Mettre en place un <li>
+// 	<li> Item </li>
+
+function Item(props) {
+
+  function handleDoubleClick() {
+    props.onDoubleClick();
+  }
+
   return (
-    <button onClick={props.onClick}>
-      Déconnexion
-    </button>
+    <li onDoubleClick={handleDoubleClick} >{props.course}</li>
   );
+
 }
 
+// Créer un composant App (class)
+// 	constructor
+//     	mettre en place un state listItems
+//         binder les méthodes handleDelete() et handleAdd() avec this
+//     handleDelete() -> supprimer l'element du state listItems avec la méthode filter()
+//     handleAdd() -> ajouter au state listItems le nouvel element
+//     render()
+//     	Afficher le composant AddForm
+//     	Parcourir les éléments dans le state listItems avec la méthode map() et afficher pour chaque élément un composant Item
+//       	condition ternaire si la liste 
+//         	si elle est vide j'affiche un msg
+//             sinon j'affiche les éléments de la liste
 
+class App extends React.Component {
 
-
-// CLASSE POUR GERER LES ETATS
-//Notre composant final est LoginControl car ici on crée le composant à partir d'une classe
-
-class LoginControl extends React.Component {
   constructor(props) {
-    // APPEL AU CONTRUCTOR
     super(props);
-    this.handleLoginClick = this.handleLoginClick.bind(this);
-    this.handleLogoutClick = this.handleLogoutClick.bind(this);
-    this.state = {isLoggedIn: false};
+    this.state = { listItems: [{ id: 1, text: 'Carottes' }, { id: 2, text: 'Tomates' }] };
+    this.handleAdd = this.handleAdd.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.id = this.state.listItems.length + 1;
   }
 
-  //méthode pour changer l'état de l'objet du constructeur à TRUE
-  handleLoginClick() {
-    this.setState({isLoggedIn: true});
+  handleAdd(value) {
+    this.setState({ listItems: [...this.state.listItems, { id: this.id, text: value }] });
+    this.id++; // this.id = this.id + 1
   }
 
-  //méthode pour changer l'état de l'objet du constructeur à FALSE
-  handleLogoutClick() {
-    this.setState({isLoggedIn: false});
+  handleDelete(id) {
+    console.log(id);
+    // Mettre à jour le state
+    // supprimer l'élément de la liste listItems qui a l'id en argument de la fonction
+    // filter()
   }
 
-  //Un Composant dans une classe renvoir TOUJOURS un rendu. Comme une fonction qui va déclencher le return a afficher dans le DOM
   render() {
-    const isLoggedIn = this.state.isLoggedIn;
-    let button;
-    if (isLoggedIn) {
-      button = <LogoutButton onClick={this.handleLogoutClick} />; //handleClick est une méthode de classe donc je dois passer par l'opérateur this
-    } else {
-      button = <LoginButton onClick={this.handleLoginClick} />;
-    }
 
-    //la fonction return est affiché a chaque fois que lon met à jour le DOM
     return (
-      <div>
-        <Greeting isLoggedIn={isLoggedIn} />
-        {button}
-      </div>
+      <>
+      {/* la propriete apelle la fonction onsubmitt déclaré dans la fonction handlesubmitt en haut de page */}
+        <AddForm onSubmit={this.handleAdd} />
+        <ul>
+          {
+            this.state.listItems.length > 0
+              ?
+              this.state.listItems.map(
+                (itemValue, index) => <Item onDoubleClick={(e) => this.handleDelete(itemValue.id)} key={itemValue.id} course={itemValue.text} />
+              )
+              : <p>Aucun élément dans la liste</p>
+          }
+        </ul>
+      </>
     );
+
   }
+
 }
 
 ReactDOM.render(
-  <LoginControl />,
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
   document.getElementById('root')
 );
-
-
